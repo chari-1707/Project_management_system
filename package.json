@@ -1,0 +1,15 @@
+{
+  "name": "prd_major_project",
+  "version": "1.0.0",
+  "description": "A project Managment System",
+  "license": "ISC",
+  "author": "Chari",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "devDependencies": {
+    "prettier": "3.9.6"
+  }
+}
