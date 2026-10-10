@@ -63,7 +63,7 @@ const UserSchema = new Schema({
     timestamps: true
 })
 
-UserSchema.pre("save", async function (next) {
+UserSchema.pre("save", async function (next) { // dont use arrow function becoz sometimes you need this so ...
     if (!this.isModified("password")) return next()
     // I only want to run this function when user first time entering and when modifing 
     //means when we are not modifing the password 

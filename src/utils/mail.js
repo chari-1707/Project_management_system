@@ -20,7 +20,7 @@ const sendEmail = async (options) => {
             user: process.env.MAILTRAP_SMTP_USER,
             pass: process.env.MAILTRAP_SMTP_PASSWORD
         }
-    })
+    }) 
 
     const email = {
         from: "schari443@gmal.com",
