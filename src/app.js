@@ -18,11 +18,16 @@ app.use(cors({
     credentials: true,
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"],
     allowedHeaders: ["Authorization", "Content-Type"]
-})) 
+}))
 
 //import the routes
 import healthcheckRouter from "./routes/healthcheck.route.js";
+import authRouter from "./routes/auth.rotue.js";
+
+
 app.use("/api/v1/healthcheck", healthcheckRouter);
+app.use("/api/v1/auth", authRouter);
+
 
 app.get("/admin", (req, res) => {
     res.send("Hey,Hello how are you ??")

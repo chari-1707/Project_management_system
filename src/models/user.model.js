@@ -101,4 +101,4 @@ UserSchema.methods.generateTemporaryToken = function () { //Token without data u
 }
 
 
-export const user = mongoose.model("user", UserSchema);
+export const User = mongoose.model("user", UserSchema);
