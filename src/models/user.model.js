@@ -63,12 +63,12 @@ const UserSchema = new Schema({
     timestamps: true
 })
 
-UserSchema.pre("save", async function (next) { // dont use arrow function becoz sometimes you need this so ...
-    if (!this.isModified("password")) return next()
+UserSchema.pre("save", async function () { // dont use arrow function becoz sometimes you need this so ...
+    if (!this.isModified("password")) return;
     // I only want to run this function when user first time entering and when modifing 
     //means when we are not modifing the password 
     this.password = await bcrypt.hash(this.password, 10)
-    next()
+    // next()
 })
 
 UserSchema.methods.isPasswordCorrect = async function (password) {
@@ -80,20 +80,20 @@ UserSchema.methods.generateAccessToken = function () {
         _id: this._id,
         email: this.email,
         username: this.username
-    }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY })
+    }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRY })
 }
 
 UserSchema.methods.generateRefreshToken = function () {
-    jwt.sign({
+    return jwt.sign({
         _id: this._id
-    }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY })
+    }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: process.env.REFRESH_TOKEN_EXPIRY })
 }
 
 
 UserSchema.methods.generateTemporaryToken = function () { //Token without data uses Crypto
     const unHashedToken = randomBytes(256).toString("hex");
 
-    const hashedToken = createHash('sha256').update(salt).digest('hex')
+    const hashedToken = createHash('sha256').update(unHashedToken).digest('hex')
 
     const tokenExpiry = Date.now() + (20 * 60 * 1000) // 20 mints
 
