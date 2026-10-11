@@ -135,4 +135,33 @@ const login = asyncHandler(async (req, res) => {
 
 })
 
-export { registerUser, login };
+
+//we can log out only if the user is logged in so in the route it self we run a middleware to fill the res.user
+const logoutUser = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                refreshToken: ""
+            }
+        },
+        {
+            new: true //once every thing is done just give me most updated object even though we are not storing just wrote
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(
+            new ApiResponse(200, {}, "User logged out Successfully")
+        )
+})
+
+export { registerUser, login, logoutUser };

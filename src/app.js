@@ -1,5 +1,6 @@
 import express from "express"
 import cors from "cors"
+import cookieParser from "cookie-parser";
 const app = express();
 
 //basic configuration
@@ -24,7 +25,7 @@ app.use(cors({
 //import the routes
 import healthcheckRouter from "./routes/healthcheck.route.js";
 import authRouter from "./routes/auth.rotue.js";
-import cookieParser from "cookie-parser";
+// import cookieParser from "cookie-parser";
 
 
 app.use("/api/v1/healthcheck", healthcheckRouter);
