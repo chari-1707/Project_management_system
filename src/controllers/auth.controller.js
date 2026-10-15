@@ -3,6 +3,8 @@ import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import { emailVerificationMailGenContent, sendEmail } from "../utils/mail.js";
+import { randomBytes, createHmac, createHash } from "crypto"
+
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -47,7 +49,7 @@ const registerUser = asyncHandler(async (req, res) => {
     user.emailVerificationToken = hashedToken;
     user.emailVerificationExpiry = tokenExpiry;
 
-    //save to the database using save method
+    //save to the database using save method but no validate every field ok
     await user.save({ validateBeforeSave: false });
 
     //send an email to the user 
@@ -135,7 +137,6 @@ const login = asyncHandler(async (req, res) => {
 
 })
 
-
 //we can log out only if the user is logged in so in the route it self we run a middleware to fill the res.user
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
@@ -164,4 +165,58 @@ const logoutUser = asyncHandler(async (req, res) => {
         )
 })
 
-export { registerUser, login, logoutUser };
+//get the current user info we will run the middleware to know whether user is logged in or not then only we get to know the user info
+const getCurrentUser = asyncHandler(async (req, res) => {
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                req.user,
+                "Current user fetched succesfully"
+            )
+        )
+})
+
+const verifyEmail = asyncHandler(async (req, res) => {
+    const verificationToken = req.params;
+
+    if (!verificationToken) {
+        throw new ApiError(401, "Email verification Token is missing")
+    }
+
+    const hashedToken = createHash('sha256').update(verificationToken).digest('hex')
+
+    const user = await User.findOne(
+        {
+            emailVerificationToken: hashedToken,
+            emailVerificationExpiry: { $gt: Date.now() }
+        }
+    )
+
+    if (!user) {
+        throw new ApiError(200, "Verification token expired");
+    }
+
+    user.emailVerificationExpiry = undefined;
+    user.emailVerificationExpiry = undefined;
+
+    user.isEmailVerified = true;
+    await user.save({ validateBeforeSave: false })
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    isEmailVerified: true
+                },
+                "Email verified Successfully"
+            )
+        )
+
+})
+
+
+
+export { registerUser, login, logoutUser, getCurrentUser, verifyEmail };
