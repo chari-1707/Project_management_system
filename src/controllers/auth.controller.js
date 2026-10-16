@@ -178,6 +178,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         )
 })
 
+//we learned something new just see the code you will understand 
 const verifyEmail = asyncHandler(async (req, res) => {
     const verificationToken = req.params;
 
@@ -198,7 +199,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
         throw new ApiError(200, "Verification token expired");
     }
 
-    user.emailVerificationExpiry = undefined;
+    user.emailVerificationToken = undefined;
     user.emailVerificationExpiry = undefined;
 
     user.isEmailVerified = true;
