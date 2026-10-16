@@ -307,6 +307,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             secure: true
         }
 
+        //Refresh Token Rotation we are not using the refresh token to it's full potential
         const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshToken(user._id);
 
         user.refreshToken = newRefreshToken;
