@@ -332,6 +332,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 })
 
+//forgot password we send email and we recieve a link to change a password 
 const forgotPasswordRequest = asyncHandler(async (req, res) => {
     const { email } = req.body;
 
@@ -369,6 +370,48 @@ const forgotPasswordRequest = asyncHandler(async (req, res) => {
         )
 })
 
+//Here in this controller we actually write the logic how to change the password
+const resetForgotPassword = asyncHandler(async (req, res) => {
+    const { resetToken } = req.params;
+    const { newPassword } = req.body;
+
+    let hashedToken = createHash("sha256")
+        .update(resetToken)
+        .digest('hex');
+
+    const user = await User.findOne(
+        {
+            forgotPasswordToken: hashedToken,
+            forgotPasswordExpiry: { $gt: Date.now() }
+        }
+    )
+
+    if (!user) {
+        throw new ApiError(489, "Token is Invalid or expired")
+    }
+
+    user.forgotPasswordToken = undefined;
+    user.forgotPasswordExpiry = undefined;
+
+    //Dont worry about the hashing of password the PRE_HOOK will take care ok
+    user.password = newPassword
+
+    await user.save({ validateBeforeSave: false })
+
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "Password reset Successfully"
+            )
+        )
+
+})
+
+
+
 
 export {
     registerUser,
@@ -377,5 +420,7 @@ export {
     getCurrentUser,
     verifyEmail,
     resendEmailVerification,
-    refreshAccessToken
+    refreshAccessToken,
+    forgotPasswordRequest,
+    resetForgotPassword
 };
