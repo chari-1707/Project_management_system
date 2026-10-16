@@ -2,9 +2,10 @@ import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
 import { asyncHandler } from "../utils/async-handler.js";
-import { emailVerificationMailGenContent, sendEmail } from "../utils/mail.js";
+import { emailVerificationMailGenContent, forgotPasswordMailGenContent, sendEmail } from "../utils/mail.js";
 import { randomBytes, createHmac, createHash } from "crypto"
 import jwt from "jsonwebtoken"
+import { kMaxLength } from "buffer";
 
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -22,7 +23,6 @@ const generateAccessAndRefreshToken = async (userId) => {
         throw new ApiError(500, "Something went wrong while generating access token")
     }
 }
-
 
 const registerUser = asyncHandler(async (req, res) => {
     const { email, username, password, role } = req.body;//get the data
@@ -331,6 +331,44 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Invalid refresh token")
     }
 })
+
+const forgotPasswordRequest = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        throw new ApiError(404, "User doesn't exists");
+    }
+
+    const user = User.findOne({ email: email })
+
+    const { unHashedToken, hashedToken, tokenExpiry } = user.generateTemporaryToken();
+
+    user.forgotPasswordToken = hashedToken;
+    user.forgotPasswordExpiry = tokenExpiry;
+
+    await user.save({ validateBeforeSave: false })
+
+    await sendEmail(
+        {
+            email: user?.email,
+            subject: "Please verfiy your email",
+            mailGenContent: forgotPasswordMailGenContent(
+                user.username,//username
+                `${process.env.FORGOT_PASSWORD_REDIRECT_URL}/${unHashedToken}`//verificationURL
+            )
+        }
+    )
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "Password reset mail has been send on your mail ID"
+            )
+        )
+})
+
 
 export {
     registerUser,
