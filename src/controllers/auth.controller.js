@@ -218,6 +218,75 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
 })
 
+const resendEmailVerification = asyncHandler(async (req, res) => {
 
+    // const { unHashedToken, hashedToken, tokenExpiry } = req.user.generateTemporaryToken();
 
-export { registerUser, login, logoutUser, getCurrentUser, verifyEmail };
+    // req.user.emailVerificationToken = hashedToken;
+    // req.user.emailVerificationExpiry = tokenExpiry;
+
+    // await req.user.save({ validateBeforeSave: false });
+
+    // await req.user.sendEmail(
+    //     {
+    //         email: user?.email,
+    //         subject: "Please verify the email",
+    //         mailGenContent: emailVerificationMailGenContent(
+    //             user.username,
+    //              `${req.protocol}://${req.get("host")}/api/v1/users/verify-email/${unHashedToken}`//verificationURL
+    //         )
+    //     }
+    // )
+
+    const user = User.findById(req.user?._id);
+
+    if (!user) {
+        throw new ApiError(404, "User does not exist");
+    }
+
+    //There is no point of doing the above 3 lines we can do it like commented part just for the reference i am writing this
+
+    if (user.isEmailVerified) {
+        throw new ApiError(409, "Email is already verified")
+    }
+
+    const { unHashedToken, hashedToken, tokenExpiry } = user.generateTemporaryToken();
+
+    //fill the fields of user provided by the user schema
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpiry = tokenExpiry;
+
+    //save to the database using save method but no validate every field ok
+    await user.save({ validateBeforeSave: false });
+
+    //send an email to the user 
+    await sendEmail(
+        {
+            email: user?.email,
+            subject: "Please verfiy your email",
+            mailGenContent: emailVerificationMailGenContent(
+                user.username,//username
+                `${req.protocol}://${req.get("host")}/api/v1/users/verify-email/${unHashedToken}`//verificationURL
+            )
+        }
+    )
+
+    res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "Mail have been sent to your Email ID"
+            )
+        )
+})
+
+export {
+    registerUser,
+    login,
+    logoutUser,
+    getCurrentUser,
+    verifyEmail,
+    resendEmailVerification,
+    
+};
