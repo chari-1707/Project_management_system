@@ -181,7 +181,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
 //we learned something new just see the code you will understand 
 const verifyEmail = asyncHandler(async (req, res) => {
-    const verificationToken = req.params;
+    const { verificationToken } = req.params;
 
     if (!verificationToken) {
         throw new ApiError(401, "Email verification Token is missing")
@@ -239,7 +239,7 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
     //     }
     // )
 
-    const user = User.findById(req.user?._id);
+    const user = await User.findById(req.user?._id);
 
     if (!user) {
         throw new ApiError(404, "User does not exist");
@@ -314,8 +314,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         await user.save({ validateBeforeSave: false })
 
         return res.status(200)
-            .cookie(accessToken, options)
-            .cookie(newRefreshToken, options)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
             .json(
                 new ApiResponse(
                     200,
@@ -340,7 +340,7 @@ const forgotPasswordRequest = asyncHandler(async (req, res) => {
         throw new ApiError(404, "User doesn't exists");
     }
 
-    const user = User.findOne({ email: email })
+    const user = await User.findOne({ email: email })
 
     const { unHashedToken, hashedToken, tokenExpiry } = user.generateTemporaryToken();
 
@@ -435,8 +435,6 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
             )
         )
 })
-
-
 
 export {
     registerUser,
