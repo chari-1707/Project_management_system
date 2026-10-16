@@ -19,7 +19,7 @@ router.post("/reset-password/:resetToken", userResetForgotPasswordValidator(), v
 
 //secure routes
 router.post("/logout", verifyJWT, logoutUser);
-router.get("/current-user", verifyJWT, getCurrentUser);
+router.post("/current-user", verifyJWT, getCurrentUser);
 router.post("/change-password", verifyJWT, userChangeCurrentPasswordValidator(), validate, changeCurrentPassword);
 router.post("/resend-email-verification", verifyJWT, resendEmailVerification)
 
