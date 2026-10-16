@@ -410,6 +410,31 @@ const resetForgotPassword = asyncHandler(async (req, res) => {
 
 })
 
+//Here this is different from above two because change existing password is when the user logged in
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user?._id);
+
+    const isPasswordValid = await user.isPasswordCorrect(oldPassword);
+
+    if (!isPasswordValid) {
+        throw new ApiError(400, "Invalid oldPassword")
+    }
+
+
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false })
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "Password changed successfully"
+            )
+        )
+})
 
 
 
@@ -422,5 +447,6 @@ export {
     resendEmailVerification,
     refreshAccessToken,
     forgotPasswordRequest,
-    resetForgotPassword
+    resetForgotPassword,
+    changeCurrentPassword
 };
