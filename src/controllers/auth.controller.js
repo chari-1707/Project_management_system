@@ -447,4 +447,4 @@ export {
     forgotPasswordRequest,
     resetForgotPassword,
     changeCurrentPassword
-};
+}; 
