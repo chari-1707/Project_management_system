@@ -69,8 +69,62 @@ const deleteProject = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, project, "Project deleted successfully"));
 });
 
+//From here we use mongoDB Aggregation pipeline
 const getProjects = asyncHandler(async (req, res) => {
-    //Test
+    const projects = await ProjectMember.aggregate([
+        {
+            $match: {
+                user: new mongoose.Types.ObjectId(req.user._id),
+            },
+        },
+        {
+            $lookup: {
+                from: "projects", // lower case and plural becoz we are looking into db not models remember
+                localField: "project",
+                foreignField: "_id",
+                as: "projects",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "projectmemebers",
+                            localField: "_id",
+                            foreignField: "projects",
+                            as: "projectmemebers",
+                        },
+                    },
+                    {
+                        $addFields: {
+                            members: {
+                                $size: "$projectmembers",
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $unwind: "$project",
+        },
+        {
+            $project: {
+                project: {
+                    _id: 1,
+                    name: 1,
+                    description: 1,
+                    members: 1,
+                    createdAt: 1,
+                    createdBy: 1,
+                },
+                role: 1,
+                _id: 0,
+            },
+        },
+    ]);
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, projects, "Projects fetched successfully"));
+        
 });
 
 const getProjectById = asyncHandler(async (req, res) => {
