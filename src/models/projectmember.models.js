@@ -25,6 +25,8 @@ const projectMemberSchema = new Schema(
     { timestamps: true },
 );
 
+//actually this collection contatins the userID and ProjectID means a document in this collection refer to which user working on which project 
+
 export const ProjectMember = mongoose.model(
     "ProjectMember",
     projectMemberSchema,
