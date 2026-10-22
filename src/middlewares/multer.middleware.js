@@ -2,6 +2,7 @@ import multer from "multer";
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
+        // here cb is callback refer to offical docs to understand
         cb(null, `./public/images`);
     },
     filename: function (req, file, cb) {
