@@ -71,7 +71,83 @@ const createTask = asyncHandler(async (req, res) => {
 });
 
 const getTaskById = asyncHandler(async (req, res) => {
-    //Chai
+    const { taskId } = req.params;
+
+    const task = await Task.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(taskId),
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "assignedTo",
+                foreignField: "_id",
+                as: "assignedTo",
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            username: 1,
+                            fullName: 1,
+                            avatar: 1,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $lookup: {
+                from: "subtasks",
+                localField: "_id",
+                foreignField: "task",
+                as: "subtasks",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "createdBy",
+                            foreignField: "_id",
+                            as: "subtasks",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        _id: 1,
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        $addFields: {
+                            createdBy: {
+                                $arrayEleAt: ["$createdBy", 0],
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $addFields: {
+                assignedTo: {
+                    $arrayEleAt: ["$assignedTo", 0],
+                },
+            },
+        },
+    ]);
+
+    if (!task || task.length === 0) {
+        throw new ApiError(404, "Task not found");
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, task[0], "Task fetched successfully"));
 });
 
 const updateTask = asyncHandler(async (req, res) => {
