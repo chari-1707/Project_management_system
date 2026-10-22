@@ -14,7 +14,22 @@ import {
 } from "../utils/constants.js";
 
 const getTasks = asyncHandler(async (req, res) => {
-    //Chai
+    const { projectId } = req.params;
+
+    const project = await Project.findById(projectId);
+
+    if (!project) {
+        throw new ApiError(404, "Project not found");
+    }
+
+    const tasks = await Task.find({
+        //This is an array
+        project: new mongoose.Types.ObjectId(projectId),
+    }).populate("assignedTo", "avatar username fullName"); // need to read about this populate very intresting
+
+    return res
+        .status(201)
+        .json(new ApiResponse(201, task, "Task fetched successfully"));
 });
 
 const createTask = asyncHandler(async (req, res) => {
