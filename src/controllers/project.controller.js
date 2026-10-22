@@ -6,7 +6,7 @@ import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
 import { asyncHandler } from "../utils/async-handler.js";
 import mongoose from "mongoose";
-import { AvailableUserRole, UserRoleEnum } from "../utils/constants";
+import { AvailableUserRole, UserRoleEnum } from "../utils/constants.js";
 
 const createProject = asyncHandler(async (req, res) => {
     const { name, description } = req.body;
