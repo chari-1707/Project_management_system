@@ -21,7 +21,7 @@ import {
     verifyJWT,
     validateProjectPermission,
 } from "../middlewares/auth.middleware.js";
-import { AvailableUserRole, UserRoleEnum } from "../utils/constants";
+import { AvailableUserRole, UserRoleEnum } from "../utils/constants.js";
 
 const router = Router();
 router.use(verifyJWT); // This is actually a short cut way instead of writing in every validator
